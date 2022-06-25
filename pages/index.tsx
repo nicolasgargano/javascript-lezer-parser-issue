@@ -11,25 +11,54 @@ import * as js from "@codemirror/lang-javascript"
 import * as one_dark from "@codemirror/theme-one-dark"
 
 export default function Page() {
-  const [state, setState] = useState<EditorState>()
-  const [view, setView] = useState<EditorView>()
+  const [stateTs, setStateTs] = useState<EditorState>()
+  const [viewTs, setViewTs] = useState<EditorView>()
 
-  const callbackRef = useCallback((element: HTMLElement | null) => {
+  const callbackRefTs = useCallback((element: HTMLElement | null) => {
     if (element) {
       const newState = EditorState.create({
-        extensions: extensions,
+        extensions: [...extensions, js.javascript({ typescript: true })],
         doc: template,
       })
       const newView = new EditorView({
         state: newState,
         parent: element,
       })
-      setState(newState)
-      setView(newView)
+      setStateTs(newState)
+      setViewTs(newView)
     }
   }, [])
 
-  return <main id="codemirror" className="w-full h-screen [&_.cm-editor]:h-full" ref={callbackRef} />
+  const [stateTsx, setStateTsx] = useState<EditorState>()
+  const [viewTsx, setViewTsx] = useState<EditorView>()
+
+  const callbackRefTsx = useCallback((element: HTMLElement | null) => {
+    if (element) {
+      const newState = EditorState.create({
+        extensions: [...extensions, js.javascript({ typescript: true, jsx: true })],
+        doc: template,
+      })
+      const newView = new EditorView({
+        state: newState,
+        parent: element,
+      })
+      setStateTsx(newState)
+      setViewTsx(newView)
+    }
+  }, [])
+
+  return (
+    <main className="flex flex-col w-screen h-screen space-y-10 bg-zinc-800">
+      <section className="flex flex-col">
+        <h1 className="p-2 bg-zinc-700 text-white">TS</h1>
+        <div id="codemirror-ts" className="[&_.cm-editor]:h-full" ref={callbackRefTs}></div>
+      </section>
+      <section className="flex flex-col">
+        <h1 className="p-2 bg-zinc-700 text-white">TSX</h1>
+        <div id="codemirror-tsx" className="[&_.cm-editor]:h-full" ref={callbackRefTsx}></div>
+      </section>
+    </main>
+  )
 }
 
 // -- CODEMIRROR EXTENSIONS
@@ -62,7 +91,6 @@ const extensions: Extension[] = [
     ...lint.lintKeymap,
   ]),
   EditorView.lineWrapping,
-  js.javascript({ typescript: true }),
   one_dark.oneDark,
 ]
 
@@ -73,7 +101,8 @@ export type Equal<X, Y> =
   (<T>() => T extends X ? 1 : 2) extends
   (<T>() => T extends Y ? 1 : 2) ? true : false
 
-// Notice the difference between the "in keyof T" in line 7 and the one in line 10.
+// Notice the difference between the "in keyof T" in line 8 and the one in line 11.
+// Also the T's and the K's are different colors across the type.
 export type Debug<T> = { [K in keyof T]: T[K] }
 export type MergeInsertions<T> =
   T extends object
